@@ -1,187 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-:root {
-    --primary-color: #7B68EE; /* A softer, modern purple */
-    --primary-light: #e8e5ff;
-    --bg-color: #F8F9FA;
-    --text-color: #343A40;
-    --light-text-color: #6c757d;
-    --border-color: #dee2e6;
-    --white: #ffffff;
-    --border-radius-lg: 16px;
-    --border-radius-sm: 12px;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    overflow: hidden; /* Hide overflow from decorative circles */
-    position: relative;
-}
-
-/* Decorative background circles */
-body::before, body::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background-color: rgba(123, 104, 238, 0.1);
-    z-index: -1;
-}
-
-body::before {
-    width: 300px;
-    height: 300px;
-    top: -100px;
-    left: -100px;
-}
-
-body::after {
-    width: 250px;
-    height: 250px;
-    bottom: -80px;
-    right: -80px;
-}
-
-
-.container {
-    text-align: center;
-    background: transparent;
-    padding: 2rem;
-    max-width: 400px;
-    width: 90%;
-}
-
-.clock-icon {
-    display: inline-block;
-    width: 80px;
-    height: 40px;
-    background-color: var(--primary-light);
-    border-radius: 20px;
-    margin-bottom: 1.5rem;
-    position: relative;
-}
-
-/* Clock hands */
-.clock-icon::before, .clock-icon::after {
-    content: '';
-    position: absolute;
-    background-color: #333;
-    left: 50%;
-    top: 50%;
-    transform-origin: bottom;
-}
-.clock-icon::before { /* Minute hand */
-    width: 2px;
-    height: 12px;
-    transform: translate(-50%, -100%) rotate(0deg);
-}
-.clock-icon::after { /* Hour hand */
-    width: 2px;
-    height: 8px;
-    transform: translate(-50%, -100%) rotate(90deg);
-}
-
-.logo {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: 0.5rem;
-}
-
-h1 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-}
-
-p {
-    color: var(--light-text-color);
-    margin-bottom: 2.5rem;
-}
-
-.btn-primary {
-    display: inline-block;
-    width: 100%;
-    padding: 1rem;
-    background-color: var(--primary-color);
-    color: var(--white);
-    border: none;
-    border-radius: 50px; /* Pill shape */
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(123, 104, 238, 0.3);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(123, 104, 238, 0.4);
-}
-
-/* Auth Page Specific Styles */
-.auth-container {
-    background: var(--white);
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-}
-
-.auth-container .logo {
-    font-size: 2rem;
-    color: var(--primary-color);
-}
-
-.form-container {
-    width: 100%;
-}
-
-.form-container form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.form-container input {
-    width: 100%;
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-    background-color: #f8f9fa;
-    border-radius: var(--border-radius-sm);
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.form-container input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(123, 104, 238, 0.2);
-}
-
-.form-container p {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-}
-
-.form-container a {
-    color: var(--primary-color);
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.auth-options {
-    display: flex;
-    gap: 1rem;
-}
-
-.auth-options .btn-primary {
-    flex: 1;
-}
+:root { --primary-color: #6a5acd; --bg-color: #f7f7ff; --white: #ffffff; --text-color: #333; --border-color: #e0e0e0; --border-radius: 12px; }
+body { font-family: 'Poppins', sans-serif; margin: 0; background-color: var(--bg-color); display: flex; align-items: center; justify-content: center; min-height: 100vh; position: relative; overflow: hidden; }
+body::before, body::after { content: ''; position: absolute; border-radius: 50%; background-color: rgba(106, 90, 205, 0.08); z-index: -1; }
+body::before { width: 300px; height: 300px; top: -100px; left: -100px; }
+body::after { width: 250px; height: 250px; bottom: -80px; right: -80px; }
+.container { text-align: center; padding: 2rem; max-width: 380px; width: 90%; }
+.clock-icon { display: inline-block; width: 80px; height: 40px; background-color: #e6e6fa; border-radius: 20px; margin-bottom: 1rem; position: relative; }
+.clock-icon::before, .clock-icon::after { content: ''; position: absolute; background-color: var(--text-color); left: 50%; top: 50%; transform-origin: bottom; }
+.clock-icon::before { width: 2px; height: 12px; transform: translate(-50%, -100%) rotate(0deg); }
+.clock-icon::after { width: 2px; height: 8px; transform: translate(-50%, -100%) rotate(90deg); }
+.logo { font-size: 2.2rem; font-weight: 700; color: var(--text-color); margin-bottom: 0.5rem; }
+.tagline, h1, .redirect-link { margin-bottom: 1.5rem; color: #667; }
+.btn-primary { display: inline-block; width: 100%; padding: 1rem; background: var(--primary-color); color: var(--white); border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(106, 90, 205, 0.3); box-sizing: border-box; }
+/* Auth Landing Page */
+.auth-landing-container { background: var(--white); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.07); }
+.language-dropdown { width: 100%; padding: 0.8rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color); border-radius: 50px; text-align: center; font-size: 1rem; appearance: none; background: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 1rem center; }
+.illustration-container img { max-width: 100%; height: auto; margin-bottom: 1.5rem; }
+.auth-options { display: flex; gap: 1rem; }
+/* Auth Form Page */
+.auth-form-container { background: var(--white); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.07); padding: 2rem; }
+.auth-form-container form { display: flex; flex-direction: column; gap: 1rem; }
+.auth-form-container input { width: 100%; padding: 1rem; border: 1px solid var(--border-color); background-color: #fafafa; border-radius: var(--border-radius); font-size: 1rem; box-sizing: border-box; }
+.link { color: var(--primary-color); text-decoration: none; font-size: 0.9rem; }
+.forgot-password { text-align: right; margin-bottom: 1rem; display: block; }
+.redirect-link { font-size: 0.9rem; margin-top: 1.5rem; }
+.redirect-link a { font-weight: 600; color: var(--primary-color); }

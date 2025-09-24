@@ -1,149 +1,157 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DATA MANAGEMENT (using localStorage) ---
+    // Correct Data Structure: [{ id, name, dosage, time, frequency, takenStatus: {'YYYY-MM-DD': true/false} }]
+    const getReminders = () => JSON.parse(localStorage.getItem('medReminders')) || [];
+    const saveReminders = (reminders) => localStorage.setItem('medReminders', JSON.stringify(reminders));
+    const getPrescriptions = () => JSON.parse(localStorage.getItem('medPrescriptions')) || [];
+    const savePrescriptions = (prescriptions) => localStorage.setItem('medPrescriptions', JSON.stringify(prescriptions));
 
-    // --- DATA MANAGEMENT ---
-    // The data structure is an array of reminder objects.
-    // We use localStorage to persist data between page loads.
-    const getReminders = () => {
-        return JSON.parse(localStorage.getItem('medReminders')) || [];
-    };
-
-    const saveReminders = (reminders) => {
-        localStorage.setItem('medReminders', JSON.stringify(reminders));
-    };
-    
-    const getPrescriptions = () => {
-        return JSON.parse(localStorage.getItem('medPrescriptions')) || [];
-    };
-    
-    const savePrescriptions = (prescriptions) => {
-        localStorage.setItem('medPrescriptions', JSON.stringify(prescriptions));
-    };
-
+    const todayKey = new Date().toISOString().split('T')[0]; // Format: "2025-09-22"
+    const daysOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const todayDayAbbr = daysOfWeek[new Date().getDay()]; // e.g., "mon"
 
     // --- PAGE-SPECIFIC LOGIC ---
     const page = window.location.pathname.split("/").pop();
 
+    // Schedule Page
     if (page === 'schedule.html') {
-        const scheduleForm = document.getElementById('schedule-form');
-        scheduleForm.addEventListener('submit', (e) => {
+        document.getElementById('schedule-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const reminders = getReminders();
             const newReminder = {
-                id: Date.now(), // Unique ID
+                id: Date.now(),
                 name: document.getElementById('med-name').value,
-                time: document.getElementById('med-time').value,
                 dosage: document.getElementById('med-dosage').value,
-                taken: false // Default status
+                time: document.getElementById('med-time').value,
+                frequency: document.getElementById('med-frequency').value,
+                takenStatus: {} // An object to store taken status by date
             };
             reminders.push(newReminder);
             saveReminders(reminders);
             alert('Reminder saved!');
-            scheduleForm.reset();
             window.location.href = 'reminders.html';
         });
     }
 
+    // Reminders Page
     if (page === 'reminders.html') {
         const remindersList = document.getElementById('reminders-list');
-        const reminders = getReminders();
-        
-        if (reminders.length === 0) {
-            remindersList.innerHTML = '<p class="card">No reminders scheduled yet. Add one from the dashboard!</p>';
+        // Filter for reminders that are daily (for now, weeklies need more logic)
+        const todaysReminders = getReminders().filter(r => r.frequency === 'daily');
+
+        if (todaysReminders.length === 0) {
+            remindersList.innerHTML = '<p class="card">No reminders scheduled for today.</p>';
         } else {
-            reminders.forEach(reminder => {
+            todaysReminders.forEach(r => {
+                const isTakenToday = r.takenStatus[todayKey] === true;
                 const item = document.createElement('div');
                 item.className = 'reminder-item';
                 item.innerHTML = `
-                    <div>
-                        <h3>${reminder.name}</h3>
-                        <p>Time: ${reminder.time} | Dosage: ${reminder.dosage}</p>
+                    <div class="reminder-item-info">
+                        <strong>${r.name}</strong> (${r.dosage}) at ${r.time}
                     </div>
-                    <button class="status-btn ${reminder.taken ? 'taken' : 'missed'}" data-id="${reminder.id}">
-                        ${reminder.taken ? 'Taken' : 'Mark as Taken'}
-                    </button>
-                `;
+                    <button class="status-toggle ${isTakenToday ? 'taken' : 'pending'}" data-id="${r.id}">
+                        ${isTakenToday ? 'Taken' : 'Mark as Taken'}
+                    </button>`;
                 remindersList.appendChild(item);
             });
 
-            remindersList.addEventListener('click', (e) => {
-                if(e.target.classList.contains('status-btn')) {
-                    const reminderId = parseInt(e.target.dataset.id);
-                    const currentReminders = getReminders();
-                    const updatedReminders = currentReminders.map(r => {
-                        if (r.id === reminderId) {
-                            r.taken = !r.taken; // Toggle status
-                        }
-                        return r;
-                    });
-                    saveReminders(updatedReminders);
-                    window.location.reload(); // Refresh to show changes
+            remindersList.addEventListener('click', e => {
+                if (e.target.classList.contains('status-toggle')) {
+                    const id = parseInt(e.target.dataset.id, 10);
+                    const allReminders = getReminders();
+                    const reminderToUpdate = allReminders.find(rem => rem.id === id);
+                    if (reminderToUpdate) {
+                        // Toggle the status for today's date
+                        reminderToUpdate.takenStatus[todayKey] = !reminderToUpdate.takenStatus[todayKey];
+                        saveReminders(allReminders);
+                        window.location.reload(); // Refresh page to show the change
+                    }
                 }
             });
         }
     }
 
+    // Progress Page
     if (page === 'progress.html') {
-        const progressList = document.getElementById('progress-list');
-        const reminders = getReminders();
+        const progressContainer = document.getElementById('progress-container');
+        const reminders = getReminders().filter(r => r.frequency === 'daily');
+        const weekDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
         if (reminders.length === 0) {
-            progressList.innerHTML = '<p class="card">No medication data available to track progress.</p>';
+             progressContainer.innerHTML = '<p class="card">No daily medication is scheduled to track progress.</p>';
         } else {
-            const takenCount = reminders.filter(r => r.taken).length;
-            const totalCount = reminders.length;
-            const percentage = totalCount > 0 ? (takenCount / totalCount) * 100 : 0;
-
-            const progressItem = document.createElement('div');
-            progressItem.className = 'progress-item card';
-            progressItem.innerHTML = `
-                <div>
-                    <h3>Overall Adherence</h3>
-                    <div class="progress-bar">
-                        <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
-                    </div>
-                </div>
-                <div class="progress-text">${Math.round(percentage)}%</div>
-            `;
-            progressList.appendChild(progressItem);
+            weekDays.forEach((day, index) => {
+                // This is a simplified progress view. It checks if *any* med was taken on a day.
+                // A real app would need a more complex check against historical dates.
+                const dayAbbr = daysOfWeek[index + 1] || daysOfWeek[0]; // Adjust for week start
+                
+                const totalDosesForDay = reminders.length;
+                // For this demo, we'll just check today's status for today's bar
+                let takenDoses = 0;
+                if (dayAbbr === todayDayAbbr) {
+                    takenDoses = reminders.filter(r => r.takenStatus[todayKey] === true).length;
+                }
+                
+                const adherence = totalDosesForDay > 0 ? (takenDoses / totalDosesForDay) * 100 : 0;
+    
+                const dayElement = document.createElement('div');
+                dayElement.className = 'progress-day';
+                dayElement.innerHTML = `
+                    <div class="day-label">${day}</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width:${adherence}%"></div>
+                    </div>`;
+                progressContainer.appendChild(dayElement);
+            });
         }
     }
-    
-    if (page === 'prescription.html') {
-        const prescriptionForm = document.getElementById('prescription-form');
-        const prescriptionList = document.getElementById('prescription-list');
-        
-        const renderPrescriptions = () => {
-            prescriptionList.innerHTML = '';
-            const prescriptions = getPrescriptions();
-            if (prescriptions.length === 0) {
-                 prescriptionList.innerHTML = '<p>No prescriptions added yet.</p>';
-            } else {
-                prescriptions.forEach(p => {
-                    const item = document.createElement('div');
-                    item.className = 'card';
-                    item.innerHTML = `<p>${p.details}</p>`;
-                    prescriptionList.appendChild(item);
-                });
-            }
-        };
 
-        prescriptionForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const prescriptions = getPrescriptions();
-            const newPrescription = {
-                id: Date.now(),
-                details: document.getElementById('prescription-details').value
-            };
-            prescriptions.push(newPrescription);
-            savePrescriptions(prescriptions);
-            alert('Prescription saved!');
-            prescriptionForm.reset();
-            renderPrescriptions();
-        });
+    // Missed Medicines Page
+    if (page === 'missed.html') {
+        const missedList = document.getElementById('missed-list');
+        // Find daily reminders that are NOT marked as taken for today
+        const missedMeds = getReminders().filter(r => r.frequency === 'daily' && r.takenStatus[todayKey] !== true);
 
-        renderPrescriptions(); // Initial render
+        if (missedMeds.length === 0) {
+            missedList.innerHTML = '<p class="card">No missed medicines for today! Great job!</p>';
+        } else {
+            missedList.innerHTML = `<div class="day-group"><div class="day-group-header">Today</div></div>`;
+            const dayGroup = missedList.querySelector('.day-group');
+            missedMeds.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'reminder-item';
+                item.innerHTML = `<div class="reminder-item-info"><strong>${r.name}</strong> (${r.dosage}) at ${r.time}</div>`;
+                dayGroup.appendChild(item);
+            });
+        }
     }
 
+    // Prescription Page
+    if (page === 'prescription.html') {
+        const form = document.getElementById('prescription-form');
+        const list = document.getElementById('prescription-list');
+        const renderPrescriptions = () => {
+            list.innerHTML = '';
+            getPrescriptions().forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'card';
+                item.innerHTML = `<p>${p.details}</p>`;
+                list.appendChild(item);
+            });
+        };
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const prescriptions = getPrescriptions();
+            prescriptions.push({ id: Date.now(), details: document.getElementById('prescription-details').value });
+            savePrescriptions(prescriptions);
+            form.reset();
+            renderPrescriptions();
+        });
+        renderPrescriptions();
+    }
+
+    // AI Assistant Page
     if (page === 'assistant.html') {
         const sendBtn = document.getElementById('send-btn');
         const userInput = document.getElementById('user-input');
@@ -159,33 +167,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const getBotResponse = (text) => {
             const reminders = getReminders();
-            text = text.toLowerCase();
-            if (text.includes('schedule') || text.includes('remind')) {
-                if (reminders.length === 0) return "You have no upcoming reminders.";
-                const upcoming = reminders.find(r => !r.taken);
-                return upcoming ? `Your next dose is ${upcoming.name} at ${upcoming.time}.` : "You have taken all your doses for now!";
+            const lowerCaseText = text.toLowerCase();
+
+            if (lowerCaseText.includes('schedule') || lowerCaseText.includes('remind') || lowerCaseText.includes('dose')) {
+                const upcoming = reminders.sort((a, b) => a.time.localeCompare(b.time))
+                                         .find(r => r.takenStatus[todayKey] !== true);
+                if (upcoming) {
+                    return `Your next dose is ${upcoming.name} at ${upcoming.time}.`;
+                } else {
+                    return "You have taken all your doses for today!";
+                }
             }
-            if (text.includes('prescription')) {
-                const prescriptions = getPrescriptions();
-                return prescriptions.length > 0 ? `You have ${prescriptions.length} prescription(s) saved.` : "You have not saved any prescriptions yet.";
-            }
-            if (text.includes('hello') || text.includes('hi')) {
-                return "Hello! How can I assist with your medications today?";
-            }
-            return "I'm sorry, I can only answer questions about your 'schedule' or 'prescriptions'.";
+            return "Sorry, I can only answer questions about your 'schedule'.";
         };
 
-        sendBtn.addEventListener('click', () => {
+        const sendMessage = () => {
             const userText = userInput.value.trim();
             if (userText) {
                 addMessage(userText, 'user');
-                setTimeout(() => {
-                    const botText = getBotResponse(userText);
-                    addMessage(botText, 'bot');
-                }, 500);
                 userInput.value = '';
+                setTimeout(() => {
+                    addMessage(getBotResponse(userText), 'bot');
+                }, 500);
             }
-        });
-    }
+        };
 
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        addMessage("Hello! How can I help you today?", 'bot');
+    }
 });
